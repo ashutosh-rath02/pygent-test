@@ -1,0 +1,49 @@
+Metadata-Version: 2.4
+Name: agentcheck
+Version: 0.1.0
+Summary: Pytest-style behavioral regression testing for AI agents.
+Author: OpenAI Codex
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+
+# AgentCheck
+
+AgentCheck is pytest for AI agents. Test behavior, not exact text.
+
+## Quick Start
+
+```bash
+python -m pip install -e .
+agentcheck test
+```
+
+## Example
+
+```python
+from agentcheck import agent_test, expect
+from examples.booking_agent import SimpleBookingAgent
+
+@agent_test(runs=5, agent_factory=SimpleBookingAgent)
+def test_booking_agent(agent: SimpleBookingAgent):
+    result = agent.run("Book a table for 2 tonight")
+
+    expect(result).used_tool("restaurant_search")
+    expect(result).used_tool("booking_tool")
+    expect(result).steps_less_than(5)
+    expect(result).did_not_claim_confirmation_without_tool("booking_tool")
+    return result
+```
+
+Try the included demo:
+
+```bash
+agentcheck test examples
+agentcheck bless examples
+```
+
+## Commands
+
+- `agentcheck test`
+- `agentcheck bless`
+- `agentcheck compare`
+- `agentcheck report`

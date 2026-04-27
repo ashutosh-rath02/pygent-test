@@ -1,0 +1,2 @@
+[console_scripts]
+agentcheck = agentcheck.cli:main

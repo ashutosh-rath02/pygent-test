@@ -1,0 +1,14 @@
+{
+  "reports": [
+    {
+      "test_name": "test_booking_agent",
+      "total_runs": 5,
+      "passed_runs": 5,
+      "failed_runs": 0,
+      "success_rate": 100.0,
+      "failure_reasons": [],
+      "average_steps": 2.0,
+      "regression": null
+    }
+  ]
+}
