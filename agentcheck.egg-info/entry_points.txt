@@ -1,2 +1,5 @@
 [console_scripts]
 agentcheck = agentcheck.cli:main
+
+[pytest11]
+agentcheck = agentcheck.pytest_plugin

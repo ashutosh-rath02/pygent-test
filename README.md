@@ -45,3 +45,15 @@ agentcheck test regression_examples
 - `agentcheck bless`
 - `agentcheck compare`
 - `agentcheck report`
+
+## Pytest
+
+AgentCheck tests can also run through `pytest`:
+
+```bash
+pytest examples
+pytest tests
+pytest regression_examples
+```
+
+Decorated `@agent_test(...)` functions are collected as AgentCheck test items, and each item still runs its configured repeated-run behavior.

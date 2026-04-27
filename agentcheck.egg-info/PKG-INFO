@@ -41,9 +41,27 @@ agentcheck test examples
 agentcheck bless examples
 ```
 
+Try the intentional failure demo:
+
+```bash
+agentcheck test regression_examples
+```
+
 ## Commands
 
 - `agentcheck test`
 - `agentcheck bless`
 - `agentcheck compare`
 - `agentcheck report`
+
+## Pytest
+
+AgentCheck tests can also run through `pytest`:
+
+```bash
+pytest examples
+pytest tests
+pytest regression_examples
+```
+
+Decorated `@agent_test(...)` functions are collected as AgentCheck test items, and each item still runs its configured repeated-run behavior.

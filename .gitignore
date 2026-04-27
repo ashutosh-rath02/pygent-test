@@ -1,0 +1,34 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.env
+.venv/
+venv/
+env/
+ENV/
+
+# Packaging and build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Test and coverage artifacts
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# AgentCheck local artifacts
+.agentcheck/
+
+# Temporary pytest cache spillover seen on some Windows/OneDrive setups
+pytest-cache-files-*/
+
+# IDE and OS clutter
+.DS_Store
+Thumbs.db

@@ -3,10 +3,10 @@
     "test_booking_agent": [
       {
         "test_name": "test_booking_agent",
-        "run_id": "d1a96171b1cc4d379cd54c17e92a9aec",
+        "run_id": "14cb52b248044021a9d65626936f4e70",
         "result": {
           "input": "Book a table for 2 tonight",
-          "final_output": "Booked a table at Bombay Canteen for 2 tonight.",
+          "final_output": "Booked a table at Bombay Canteen for 2 tonight. Confirmation: bombay-canteen-2.",
           "messages": [],
           "tool_calls": [
             {
@@ -20,7 +20,20 @@
                 "available": true
               },
               "success": true,
-              "timestamp": "2026-04-27T09:45:08.288523+00:00"
+              "timestamp": "2026-04-27T10:05:34.554748+00:00"
+            },
+            {
+              "name": "booking_tool",
+              "args": {
+                "restaurant_name": "Bombay Canteen",
+                "party_size": 2
+              },
+              "output": {
+                "confirmation_id": "bombay-canteen-2",
+                "restaurant_name": "Bombay Canteen"
+              },
+              "success": true,
+              "timestamp": "2026-04-27T10:05:34.554810+00:00"
             }
           ],
           "steps": 2,
@@ -29,25 +42,19 @@
           "cost": null,
           "metadata": {
             "agent": "simple-booking-agent",
-            "mode": "unsafe"
+            "mode": "safe"
           }
         },
-        "assertions": [
-          {
-            "name": "used_tool",
-            "passed": false,
-            "message": "Expected tool `booking_tool` to be called, but saw ['restaurant_search']."
-          }
-        ],
-        "passed": false,
-        "error": "Expected tool `booking_tool` to be called, but saw ['restaurant_search']."
+        "assertions": [],
+        "passed": true,
+        "error": null
       },
       {
         "test_name": "test_booking_agent",
-        "run_id": "fcac8d9f31e14131b4c0ad5b4b8e9e38",
+        "run_id": "4ac924c1f7b94aba9a41b3049338eeaf",
         "result": {
           "input": "Book a table for 2 tonight",
-          "final_output": "Booked a table at Bombay Canteen for 2 tonight.",
+          "final_output": "Booked a table at Bombay Canteen for 2 tonight. Confirmation: bombay-canteen-2.",
           "messages": [],
           "tool_calls": [
             {
@@ -61,7 +68,20 @@
                 "available": true
               },
               "success": true,
-              "timestamp": "2026-04-27T09:45:08.288631+00:00"
+              "timestamp": "2026-04-27T10:05:34.555096+00:00"
+            },
+            {
+              "name": "booking_tool",
+              "args": {
+                "restaurant_name": "Bombay Canteen",
+                "party_size": 2
+              },
+              "output": {
+                "confirmation_id": "bombay-canteen-2",
+                "restaurant_name": "Bombay Canteen"
+              },
+              "success": true,
+              "timestamp": "2026-04-27T10:05:34.555121+00:00"
             }
           ],
           "steps": 2,
@@ -70,25 +90,19 @@
           "cost": null,
           "metadata": {
             "agent": "simple-booking-agent",
-            "mode": "unsafe"
+            "mode": "safe"
           }
         },
-        "assertions": [
-          {
-            "name": "used_tool",
-            "passed": false,
-            "message": "Expected tool `booking_tool` to be called, but saw ['restaurant_search']."
-          }
-        ],
-        "passed": false,
-        "error": "Expected tool `booking_tool` to be called, but saw ['restaurant_search']."
+        "assertions": [],
+        "passed": true,
+        "error": null
       },
       {
         "test_name": "test_booking_agent",
-        "run_id": "d7573736de384a699728f2b2e1f2ae79",
+        "run_id": "fea60c29ecef4d1bb48b361221281936",
         "result": {
           "input": "Book a table for 2 tonight",
-          "final_output": "Booked a table at Bombay Canteen for 2 tonight.",
+          "final_output": "Booked a table at Bombay Canteen for 2 tonight. Confirmation: bombay-canteen-2.",
           "messages": [],
           "tool_calls": [
             {
@@ -102,7 +116,20 @@
                 "available": true
               },
               "success": true,
-              "timestamp": "2026-04-27T09:45:08.288678+00:00"
+              "timestamp": "2026-04-27T10:05:34.555302+00:00"
+            },
+            {
+              "name": "booking_tool",
+              "args": {
+                "restaurant_name": "Bombay Canteen",
+                "party_size": 2
+              },
+              "output": {
+                "confirmation_id": "bombay-canteen-2",
+                "restaurant_name": "Bombay Canteen"
+              },
+              "success": true,
+              "timestamp": "2026-04-27T10:05:34.555320+00:00"
             }
           ],
           "steps": 2,
@@ -111,25 +138,19 @@
           "cost": null,
           "metadata": {
             "agent": "simple-booking-agent",
-            "mode": "unsafe"
+            "mode": "safe"
           }
         },
-        "assertions": [
-          {
-            "name": "used_tool",
-            "passed": false,
-            "message": "Expected tool `booking_tool` to be called, but saw ['restaurant_search']."
-          }
-        ],
-        "passed": false,
-        "error": "Expected tool `booking_tool` to be called, but saw ['restaurant_search']."
+        "assertions": [],
+        "passed": true,
+        "error": null
       },
       {
         "test_name": "test_booking_agent",
-        "run_id": "7984a93d9e70465394a518cf88a02967",
+        "run_id": "47698b7105414018b4bdd932e9bc7056",
         "result": {
           "input": "Book a table for 2 tonight",
-          "final_output": "Booked a table at Bombay Canteen for 2 tonight.",
+          "final_output": "Booked a table at Bombay Canteen for 2 tonight. Confirmation: bombay-canteen-2.",
           "messages": [],
           "tool_calls": [
             {
@@ -143,7 +164,20 @@
                 "available": true
               },
               "success": true,
-              "timestamp": "2026-04-27T09:45:08.288709+00:00"
+              "timestamp": "2026-04-27T10:05:34.555428+00:00"
+            },
+            {
+              "name": "booking_tool",
+              "args": {
+                "restaurant_name": "Bombay Canteen",
+                "party_size": 2
+              },
+              "output": {
+                "confirmation_id": "bombay-canteen-2",
+                "restaurant_name": "Bombay Canteen"
+              },
+              "success": true,
+              "timestamp": "2026-04-27T10:05:34.555441+00:00"
             }
           ],
           "steps": 2,
@@ -152,25 +186,19 @@
           "cost": null,
           "metadata": {
             "agent": "simple-booking-agent",
-            "mode": "unsafe"
+            "mode": "safe"
           }
         },
-        "assertions": [
-          {
-            "name": "used_tool",
-            "passed": false,
-            "message": "Expected tool `booking_tool` to be called, but saw ['restaurant_search']."
-          }
-        ],
-        "passed": false,
-        "error": "Expected tool `booking_tool` to be called, but saw ['restaurant_search']."
+        "assertions": [],
+        "passed": true,
+        "error": null
       },
       {
         "test_name": "test_booking_agent",
-        "run_id": "7f5f44b7fc3a49b0a93cca31eb3d820a",
+        "run_id": "fd0a911992304fd59b1c87971f07717b",
         "result": {
           "input": "Book a table for 2 tonight",
-          "final_output": "Booked a table at Bombay Canteen for 2 tonight.",
+          "final_output": "Booked a table at Bombay Canteen for 2 tonight. Confirmation: bombay-canteen-2.",
           "messages": [],
           "tool_calls": [
             {
@@ -184,7 +212,20 @@
                 "available": true
               },
               "success": true,
-              "timestamp": "2026-04-27T09:45:08.288734+00:00"
+              "timestamp": "2026-04-27T10:05:34.555548+00:00"
+            },
+            {
+              "name": "booking_tool",
+              "args": {
+                "restaurant_name": "Bombay Canteen",
+                "party_size": 2
+              },
+              "output": {
+                "confirmation_id": "bombay-canteen-2",
+                "restaurant_name": "Bombay Canteen"
+              },
+              "success": true,
+              "timestamp": "2026-04-27T10:05:34.555564+00:00"
             }
           ],
           "steps": 2,
@@ -193,18 +234,12 @@
           "cost": null,
           "metadata": {
             "agent": "simple-booking-agent",
-            "mode": "unsafe"
+            "mode": "safe"
           }
         },
-        "assertions": [
-          {
-            "name": "used_tool",
-            "passed": false,
-            "message": "Expected tool `booking_tool` to be called, but saw ['restaurant_search']."
-          }
-        ],
-        "passed": false,
-        "error": "Expected tool `booking_tool` to be called, but saw ['restaurant_search']."
+        "assertions": [],
+        "passed": true,
+        "error": null
       }
     ]
   }

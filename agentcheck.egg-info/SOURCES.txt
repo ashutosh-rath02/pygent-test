@@ -6,6 +6,7 @@ agentcheck/baseline.py
 agentcheck/cli.py
 agentcheck/compare.py
 agentcheck/discovery.py
+agentcheck/pytest_plugin.py
 agentcheck/report.py
 agentcheck/result.py
 agentcheck/runners.py

@@ -16,8 +16,14 @@ dependencies = []
 [project.scripts]
 agentcheck = "agentcheck.cli:main"
 
+[project.entry-points.pytest11]
+agentcheck = "agentcheck.pytest_plugin"
+
 [tool.setuptools]
 include-package-data = true
 
 [tool.setuptools.packages.find]
 include = ["agentcheck*"]
+
+[tool.pytest.ini_options]
+cache_dir = ".agentcheck/pytest_cache"
