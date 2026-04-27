@@ -2,6 +2,18 @@
 
 AgentCheck is pytest for AI agents. Test behavior, not exact text.
 
+Install from source today:
+
+```bash
+python -m pip install -e .
+```
+
+Planned published package install:
+
+```bash
+pip install agentcheck-behavior
+```
+
 ## What It Does
 
 AgentCheck helps you verify agent behavior such as:
@@ -144,3 +156,4 @@ check.verify()
 Before pushing or sharing the repo, use:
 
 - [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md)
+- [PUBLISHING.md](PUBLISHING.md)

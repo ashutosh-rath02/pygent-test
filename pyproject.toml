@@ -3,15 +3,33 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agentcheck"
+name = "agentcheck-behavior"
 version = "0.1.0"
 description = "Pytest-style behavioral regression testing for AI agents."
 readme = "README.md"
 requires-python = ">=3.10"
+license = "MIT"
 authors = [
-  { name = "OpenAI Codex" }
+  { name = "Ashutosh Rath" }
 ]
 dependencies = []
+keywords = ["ai", "agents", "testing", "pytest", "evals", "regression"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Testing",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-org/agentcheck-behavior"
+Repository = "https://github.com/your-org/agentcheck-behavior"
+Issues = "https://github.com/your-org/agentcheck-behavior/issues"
 
 [project.scripts]
 agentcheck = "agentcheck.cli:main"
