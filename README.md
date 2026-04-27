@@ -19,10 +19,12 @@ from examples.booking_agent import SimpleBookingAgent
 def test_booking_agent(agent: SimpleBookingAgent):
     result = agent.run("Book a table for 2 tonight")
 
-    expect(result).used_tool("restaurant_search")
-    expect(result).used_tool("booking_tool")
-    expect(result).steps_less_than(5)
-    expect(result).did_not_claim_confirmation_without_tool("booking_tool")
+    check = expect(result, collect=True)
+    check.used_tool("restaurant_search")
+    check.used_tool("booking_tool")
+    check.steps_less_than(5)
+    check.did_not_claim_confirmation_without_tool("booking_tool")
+    check.verify()
     return result
 ```
 
@@ -57,3 +59,21 @@ pytest regression_examples
 ```
 
 Decorated `@agent_test(...)` functions are collected as AgentCheck test items, and each item still runs its configured repeated-run behavior.
+
+## Assertion Modes
+
+Use the default mode for fail-fast checks:
+
+```python
+expect(result).used_tool("restaurant_search")
+```
+
+Use `collect=True` when you want one run to report multiple behavior failures:
+
+```python
+check = expect(result, collect=True)
+check.used_tool("restaurant_search")
+check.used_tool("booking_tool")
+check.did_not_claim_confirmation_without_tool("booking_tool")
+check.verify()
+```

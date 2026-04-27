@@ -14,15 +14,19 @@ class AssertionRecord:
 
 
 class BehaviorAssertionError(AssertionError):
-    def __init__(self, record: AssertionRecord, result: AgentResult):
-        super().__init__(record.message)
-        self.record = record
+    def __init__(self, records: list[AssertionRecord], result: AgentResult):
+        message = "\n".join(record.message for record in records if not record.passed) or "Behavior assertion failed."
+        super().__init__(message)
+        self.records = records
+        self.record = next((record for record in records if not record.passed), records[0])
         self.result = result
 
 
 class Expectation:
-    def __init__(self, result: AgentResult):
+    def __init__(self, result: AgentResult, *, collect: bool = False):
         self.result = result
+        self.collect = collect
+        self.records: list[AssertionRecord] = []
 
     def _tool_names(self) -> list[str]:
         return [tool.name for tool in self.result.tool_calls]
@@ -33,9 +37,16 @@ class Expectation:
             passed=passed,
             message=success_message if passed else failure_message,
         )
-        if not passed:
-            raise BehaviorAssertionError(record, self.result)
+        self.records.append(record)
+        if not passed and not self.collect:
+            raise BehaviorAssertionError([record], self.result)
         return self
+
+    def verify(self) -> AgentResult:
+        failures = [record for record in self.records if not record.passed]
+        if failures:
+            raise BehaviorAssertionError(self.records, self.result)
+        return self.result
 
     def used_tool(self, tool_name: str) -> "Expectation":
         names = self._tool_names()
@@ -134,5 +145,5 @@ class Expectation:
         )
 
 
-def expect(result: AgentResult) -> Expectation:
-    return Expectation(result)
+def expect(result: AgentResult, *, collect: bool = False) -> Expectation:
+    return Expectation(result, collect=collect)

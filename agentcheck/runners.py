@@ -28,7 +28,7 @@ def run_single_test(definition: AgentTestDefinition) -> list[TestRun]:
                 passed=True,
             )
         except BehaviorAssertionError as exc:
-            assertions.append(exc.record)
+            assertions.extend(exc.records)
             run = TestRun(
                 test_name=definition.name,
                 run_id=new_run_id(),
