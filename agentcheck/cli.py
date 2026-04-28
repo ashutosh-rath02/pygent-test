@@ -54,7 +54,7 @@ def _run_tests(root: Path, *, bless: bool, fail_on_regression: bool) -> int:
     reports, session, trace_payload = run_test_suite(definitions)
     session.suite_id = str(root.resolve())
     current_data = [report.to_dict() for report in reports]
-    baseline_data = load_baseline()
+    baseline_data = load_baseline(session.suite_id)
     comparison = compare_reports(
         current_data,
         baseline_data["reports"] if baseline_data else None,
@@ -74,8 +74,8 @@ def _run_tests(root: Path, *, bless: bool, fail_on_regression: bool) -> int:
     _print_session_summary(session)
 
     if bless:
-        save_baseline({"suite_id": session.suite_id, "reports": current_data})
-        print(f"\nBaseline saved to {Path('.agentcheck/baselines/latest.json')}")
+        baseline_path = save_baseline({"suite_id": session.suite_id, "reports": current_data}, session.suite_id)
+        print(f"\nBaseline saved to {baseline_path}")
 
     any_behavior_failures = any(report.failed_runs for report in reports)
     any_regression = bool(comparison["regressions"])
@@ -90,11 +90,11 @@ def _run_tests(root: Path, *, bless: bool, fail_on_regression: bool) -> int:
 
 def _compare_only() -> int:
     latest_report = REPORT_DIR / "latest.json"
-    baseline = load_baseline()
+    report_data = read_json(latest_report) if latest_report.exists() else None
+    baseline = load_baseline(report_data.get("suite_id") if report_data else None)
     if not latest_report.exists() or baseline is None:
         print("Latest report or baseline is missing.")
         return EXIT_CONFIG_ERROR
-    report_data = read_json(latest_report)
     comparison = compare_reports(
         report_data["reports"],
         baseline["reports"],

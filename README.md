@@ -157,6 +157,9 @@ Every `agentcheck test` run also writes:
 - JSON report: `.agentcheck/reports/latest.json`
 - Markdown report: `.agentcheck/reports/latest.md`
 
+Every `agentcheck bless <path>` stores a suite-specific baseline under
+`.agentcheck/baselines/`.
+
 Baselines are guarded against unrelated suites. If the current run and the saved
 baseline do not share any test names, AgentCheck warns instead of silently
 pretending the comparison is valid.

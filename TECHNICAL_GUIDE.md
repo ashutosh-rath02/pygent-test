@@ -458,6 +458,8 @@ AgentCheck stores local run artifacts under:
   reports/
 ```
 
+Each blessed suite is stored as its own JSON file under `.agentcheck/baselines/`.
+
 Typical workflow:
 
 1. Run a healthy version.

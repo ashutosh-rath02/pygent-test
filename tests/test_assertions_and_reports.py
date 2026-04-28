@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+from pathlib import Path
+from uuid import uuid4
+
 from agentcheck import AgentResult, ToolCall, expect
+from agentcheck.baseline import load_baseline, save_baseline, suite_baseline_path
 from agentcheck.compare import compare_reports
 from agentcheck.report import render_markdown_report
 
@@ -90,3 +94,25 @@ def test_compare_reports_allows_cross_path_comparison_when_test_names_overlap():
 
     assert comparison["suite_mismatch"] is False
     assert len(comparison["regressions"]) == 1
+
+
+def test_suite_baselines_are_isolated(monkeypatch):
+    workspace_tmp = Path(".build-tmp") / f"baseline-test-{uuid4().hex}"
+    monkeypatch.setattr("agentcheck.storage.BASELINE_DIR", workspace_tmp)
+    monkeypatch.setattr("agentcheck.baseline.BASELINE_DIR", workspace_tmp)
+    monkeypatch.setattr("agentcheck.baseline.BASELINE_FILE", workspace_tmp / "latest.json")
+
+    first_suite = str(workspace_tmp / "examples")
+    second_suite = str(workspace_tmp / "framework_examples")
+    first_data = {"suite_id": first_suite, "reports": [{"test_name": "test_booking_agent"}]}
+    second_data = {"suite_id": second_suite, "reports": [{"test_name": "test_langgraph_agent"}]}
+
+    first_path = save_baseline(first_data, first_suite)
+    second_path = save_baseline(second_data, second_suite)
+
+    assert first_path != second_path
+    assert first_path == suite_baseline_path(first_suite)
+    assert second_path == suite_baseline_path(second_suite)
+    assert load_baseline(first_suite) == first_data
+    assert load_baseline(second_suite) == second_data
+    assert load_baseline(str(workspace_tmp / "missing_suite")) is None

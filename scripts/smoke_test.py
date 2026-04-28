@@ -69,8 +69,8 @@ def main() -> int:
         [python, "-m", "agentcheck.cli", "bless", "examples"],
     )
     run_step(
-        "Regression demo",
-        [python, "-m", "agentcheck.cli", "test", "regression_examples", "--fail-on-regression"],
+        "Broken behavior demo",
+        [python, "-m", "agentcheck.cli", "test", "regression_examples"],
         optional=True,
     )
 
