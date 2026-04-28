@@ -21,6 +21,9 @@ These are already working today:
 - normalized `AgentResult` and `ToolCall` models
 - core assertions:
   - `used_tool(...)`
+  - `used_tool_times(...)`
+  - `used_tool_at_least(...)`
+  - `used_tool_at_most(...)`
   - `did_not_use_tool(...)`
   - `used_tools_in_order([...])`
   - `steps_less_than(...)`
@@ -31,6 +34,7 @@ These are already working today:
   - `did_not_claim_confirmation_without_tool(...)`
 - collected assertion mode with `verify()`
 - local traces, reports, and baselines
+- automatic Markdown report generation
 - regression detection
 - CLI commands:
   - `test`
@@ -51,7 +55,6 @@ These are the next highest-priority items.
 
 ### 1. Better Reports
 
-- Markdown report output
 - clearer summaries of what changed
 - better run-to-run failure grouping
 
@@ -62,9 +65,7 @@ Why:
 
 Candidate additions:
 
-- `used_tool_times(tool_name, count)`
-- `used_tool_at_least(tool_name, count)`
-- `used_tool_at_most(tool_name, count)`
+- more broadly reusable behavior assertions based on real user demand
 
 Why:
 - these are broadly useful and easy to explain

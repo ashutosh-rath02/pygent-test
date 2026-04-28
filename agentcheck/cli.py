@@ -7,7 +7,7 @@ from pathlib import Path
 from .baseline import load_baseline, save_baseline
 from .compare import compare_reports
 from .discovery import collect_registered_tests, discover_test_files, import_test_file
-from .report import SessionReport
+from .report import SessionReport, render_markdown_report
 from .runners import run_test_suite
 from .storage import REPORT_DIR, TRACE_DIR, ensure_artifact_dirs, read_json, write_json
 
@@ -59,9 +59,12 @@ def _run_tests(root: Path, *, bless: bool, fail_on_regression: bool) -> int:
 
     trace_path = TRACE_DIR / "latest.json"
     report_path = REPORT_DIR / "latest.json"
+    markdown_report_path = REPORT_DIR / "latest.md"
     session.trace_file = str(trace_path)
+    session.markdown_report_file = str(markdown_report_path)
     write_json(trace_path, trace_payload)
     write_json(report_path, session.to_dict())
+    markdown_report_path.write_text(render_markdown_report(session), encoding="utf-8")
     _print_session_summary(session)
 
     if bless:
@@ -122,6 +125,8 @@ def _print_session_summary_dict(session_data: dict) -> None:
                 print(f"- {reason}")
         print()
     _print_comparison(session_data.get("baseline_comparison", {}))
+    if session_data.get("markdown_report_file"):
+        print(f"Markdown report: {session_data['markdown_report_file']}")
 
 
 def _print_comparison(comparison: dict) -> None:

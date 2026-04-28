@@ -133,6 +133,11 @@ To include the live OpenAI integration tests:
 python scripts/smoke_test.py --with-live
 ```
 
+Every `agentcheck test` run also writes:
+
+- JSON report: `.agentcheck/reports/latest.json`
+- Markdown report: `.agentcheck/reports/latest.md`
+
 ## Pytest
 
 AgentCheck tests can also run through `pytest`:
@@ -150,6 +155,9 @@ Decorated `@agent_test(...)` functions are collected as AgentCheck test items, a
 Current built-in assertions:
 
 - `used_tool(...)`
+- `used_tool_times(...)`
+- `used_tool_at_least(...)`
+- `used_tool_at_most(...)`
 - `did_not_use_tool(...)`
 - `used_tools_in_order([...])`
 - `steps_less_than(...)`

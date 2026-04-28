@@ -244,6 +244,33 @@ Use it for:
 - required tool usage
 - validating tool selection
 
+#### `used_tool_times(tool_name, count)`
+
+Passes if the tool was used exactly `count` times.
+
+Use it for:
+
+- exact tool-call count contracts
+- workflows where duplicate calls are undesirable
+
+#### `used_tool_at_least(tool_name, count)`
+
+Passes if the tool was used at least `count` times.
+
+Use it for:
+
+- retries
+- repeated search or fetch workflows
+
+#### `used_tool_at_most(tool_name, count)`
+
+Passes if the tool was used at most `count` times.
+
+Use it for:
+
+- preventing runaway tool loops
+- bounding duplicate behavior
+
 #### `did_not_use_tool(tool_name)`
 
 Passes if the named tool does not appear in `result.tool_calls`.
@@ -407,6 +434,11 @@ Example:
 ```bash
 python -m agentcheck.cli report
 ```
+
+In addition to console output, AgentCheck now writes:
+
+- `.agentcheck/reports/latest.json`
+- `.agentcheck/reports/latest.md`
 
 ## Baselines and Regression Detection
 
@@ -596,7 +628,6 @@ Current limitations include:
 - only plain Python and OpenAI Agents SDK adapters are implemented
 - regression comparison is still simple
 - report generation is still basic
-- there is no HTML or Markdown report output yet
 - live tests depend on the local API key and environment setup
 
 ## Recommended Adoption Path

@@ -31,6 +31,9 @@ class Expectation:
     def _tool_names(self) -> list[str]:
         return [tool.name for tool in self.result.tool_calls]
 
+    def _tool_count(self, tool_name: str) -> int:
+        return self._tool_names().count(tool_name)
+
     def _check(self, name: str, passed: bool, success_message: str, failure_message: str) -> "Expectation":
         record = AssertionRecord(
             name=name,
@@ -55,6 +58,33 @@ class Expectation:
             tool_name in names,
             f"Observed tool `{tool_name}`.",
             f"Expected tool `{tool_name}` to be called, but saw {names or 'no tools'}.",
+        )
+
+    def used_tool_times(self, tool_name: str, count: int) -> "Expectation":
+        actual = self._tool_count(tool_name)
+        return self._check(
+            "used_tool_times",
+            actual == count,
+            f"Tool `{tool_name}` was used exactly {count} time(s).",
+            f"Expected tool `{tool_name}` to be used exactly {count} time(s), but saw {actual}.",
+        )
+
+    def used_tool_at_least(self, tool_name: str, count: int) -> "Expectation":
+        actual = self._tool_count(tool_name)
+        return self._check(
+            "used_tool_at_least",
+            actual >= count,
+            f"Tool `{tool_name}` was used at least {count} time(s).",
+            f"Expected tool `{tool_name}` to be used at least {count} time(s), but saw {actual}.",
+        )
+
+    def used_tool_at_most(self, tool_name: str, count: int) -> "Expectation":
+        actual = self._tool_count(tool_name)
+        return self._check(
+            "used_tool_at_most",
+            actual <= count,
+            f"Tool `{tool_name}` was used at most {count} time(s).",
+            f"Expected tool `{tool_name}` to be used at most {count} time(s), but saw {actual}.",
         )
 
     def did_not_use_tool(self, tool_name: str) -> "Expectation":
