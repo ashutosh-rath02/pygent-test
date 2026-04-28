@@ -27,9 +27,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-org/agentcheck-behavior"
-Repository = "https://github.com/your-org/agentcheck-behavior"
-Issues = "https://github.com/your-org/agentcheck-behavior/issues"
+Homepage = "https://github.com/ashutosh-rath02/pygent-test"
+Repository = "https://github.com/ashutosh-rath02/pygent-test"
+Issues = "https://github.com/ashutosh-rath02/pygent-test/issues"
 
 [project.scripts]
 agentcheck = "agentcheck.cli:main"

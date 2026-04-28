@@ -11,7 +11,7 @@ python -m pip install -e .
 Planned published package install:
 
 ```bash
-pip install agentcheck-behavior
+pip install pygent-test
 ```
 
 ## What It Does
@@ -84,9 +84,12 @@ The included live tests cover:
 - a single-tool weather assistant
 - a multi-tool research assistant
 
-Integration guide:
+## Documentation
+
+Use these docs depending on what you need:
 
 - [REAL_WORLD_TESTING.md](REAL_WORLD_TESTING.md)
+  Real OpenAI Agents SDK testing setup and examples
 
 ## Included Demos
 
@@ -108,6 +111,20 @@ python -m agentcheck.cli test regression_examples --fail-on-regression
 - `python -m agentcheck.cli bless <path>`
 - `python -m agentcheck.cli compare`
 - `python -m agentcheck.cli report`
+
+## Smoke Test
+
+Run a quick end-to-end validation with:
+
+```bash
+python scripts/smoke_test.py
+```
+
+To include the live OpenAI integration tests:
+
+```bash
+python scripts/smoke_test.py --with-live
+```
 
 ## Pytest
 
@@ -151,9 +168,20 @@ check.did_not_claim_confirmation_without_tool("booking_tool")
 check.verify()
 ```
 
-## Release Readiness
+## Roadmap
 
-Before pushing or sharing the repo, use:
+This is the first step.
 
-- [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md)
-- [PUBLISHING.md](PUBLISHING.md)
+Near-term priorities:
+
+- cleaner reports, starting with Markdown output
+- a few more broadly useful assertions
+- better onboarding for testing a real agent in under 5 minutes
+- more adapters based on actual user demand
+
+Longer-term directions:
+
+- stronger regression analysis
+- better flakiness reporting
+- richer CI workflows
+- optional hosted features only if the core library proves valuable
