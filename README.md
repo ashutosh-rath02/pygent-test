@@ -23,6 +23,7 @@ AgentCheck helps you verify agent behavior such as:
 - whether the agent stayed within a step budget
 - whether the agent claimed success without tool evidence
 - whether behavior regressed against a saved baseline
+<img width="1275" height="1718" alt="image" src="https://github.com/user-attachments/assets/26bf7aa6-4c91-4a2e-9337-32796d616f6e" />
 
 ## Current Status
 
