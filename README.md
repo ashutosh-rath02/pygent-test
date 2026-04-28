@@ -89,6 +89,8 @@ The included live tests cover:
 
 Use these docs depending on what you need:
 
+- [TECHNICAL_GUIDE.md](TECHNICAL_GUIDE.md)
+  Detailed developer guide covering architecture, assertions, adapters, and workflows
 - [REAL_WORLD_TESTING.md](REAL_WORLD_TESTING.md)
   Real OpenAI Agents SDK testing setup and examples
 
