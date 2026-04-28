@@ -1,5 +1,5 @@
 from .assertions import expect
-from .adapters import OpenAIAgentsAdapter, PythonAdapter
+from .adapters import LangGraphAdapter, OpenAIAgentsAdapter, PythonAdapter
 from .result import AgentResult, ToolCall
 from .testing import agent_test
 
@@ -10,4 +10,5 @@ __all__ = [
     "expect",
     "PythonAdapter",
     "OpenAIAgentsAdapter",
+    "LangGraphAdapter",
 ]

@@ -63,6 +63,13 @@ Current published package:
 pip install pygent-test
 ```
 
+Optional framework extras:
+
+```bash
+pip install "pygent-test[langgraph]"
+pip install "pygent-test[openai]"
+```
+
 Import name:
 
 ```python
@@ -470,6 +477,10 @@ What regression currently means:
 
 - success rate dropped compared with the baseline for the same test name
 
+AgentCheck also guards against unrelated suites. If the current run and the saved
+baseline do not share any test names, it warns about the mismatch instead of
+pretending the comparison is valid.
+
 ## Smoke Testing
 
 For a quick post-install check:
@@ -519,6 +530,7 @@ Current adapters:
 
 - plain Python adapter
 - OpenAI Agents SDK adapter
+- LangGraph adapter
 
 ### Why Adapters Matter
 
@@ -552,6 +564,40 @@ For real setup details, use:
 
 - [REAL_WORLD_TESTING.md](REAL_WORLD_TESTING.md)
 - [ADAPTER_GUIDE.md](ADAPTER_GUIDE.md)
+
+## LangGraph Adapter
+
+Use `LangGraphAdapter` when testing LangGraph or LangChain agents that expose the
+common `invoke({"messages": [...]})` interface.
+
+It currently:
+
+- invokes the graph with a user message payload
+- reads returned `messages` state
+- extracts tool calls from `AIMessage.tool_calls`
+- merges tool outputs from `ToolMessage.tool_call_id`
+- normalizes logical steps without counting the user input as a behavior step
+
+Pattern:
+
+```python
+from agentcheck import LangGraphAdapter, agent_test, expect
+
+adapter = LangGraphAdapter()
+
+
+@agent_test(runs=3, agent_factory=build_graph)
+def test_langgraph_agent(graph):
+    result = adapter.run(graph, "What does AgentCheck do?")
+
+    check = expect(result, collect=True)
+    check.used_tool("search_docs")
+    check.used_tools_in_order(["search_docs"])
+    check.final_output_contains("AgentCheck")
+    check.did_not_error()
+    check.verify()
+    return result
+```
 
 ## Writing a Real OpenAI Agent Test
 

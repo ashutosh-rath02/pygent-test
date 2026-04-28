@@ -13,6 +13,7 @@ ENV/
 
 # Packaging and build artifacts
 build/
+.build-tmp/
 dist/
 *.egg-info/
 .eggs/

@@ -57,6 +57,17 @@ def main() -> int:
         "Passing demo",
         [python, "-m", "agentcheck.cli", "test", "examples"],
     )
+    if importlib.util.find_spec("langgraph") is None or importlib.util.find_spec("langchain_core") is None:
+        print("\n[SKIP] LangGraph example skipped because `langgraph` or `langchain-core` is not installed.")
+    else:
+        run_step(
+            "LangGraph example",
+            [python, "-m", "agentcheck.cli", "test", "framework_examples"],
+        )
+    run_step(
+        "Bless passing demo baseline",
+        [python, "-m", "agentcheck.cli", "bless", "examples"],
+    )
     run_step(
         "Regression demo",
         [python, "-m", "agentcheck.cli", "test", "regression_examples", "--fail-on-regression"],

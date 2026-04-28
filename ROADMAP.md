@@ -44,6 +44,7 @@ These are already working today:
 - pytest integration
 - plain Python adapter
 - OpenAI Agents SDK adapter
+- LangGraph adapter
 - local demo agents
 - intentional regression demo
 - live OpenAI integration tests
@@ -83,13 +84,7 @@ Why:
 
 These should happen after the core loop is polished.
 
-### 4. LangGraph Adapter
-
-Why:
-- likely high demand
-- useful proof of framework breadth
-
-### 5. Another Framework Adapter Based on Demand
+### 4. Another Framework Adapter Based on Demand
 
 Candidates:
 
@@ -100,7 +95,7 @@ Candidates:
 Why:
 - adapter work should follow demand, not guesses
 
-### 6. Better Regression Analysis
+### 5. Better Regression Analysis
 
 - stronger baseline comparisons
 - better flaky test visibility
@@ -113,13 +108,13 @@ Why:
 
 These are real possibilities, but not immediate priorities.
 
-### 7. CI-Focused Output Improvements
+### 6. CI-Focused Output Improvements
 
 - richer CI summaries
 - artifact-friendly report formats
 - nicer pull-request visibility
 
-### 8. More Safety-Oriented Assertions
+### 7. More Safety-Oriented Assertions
 
 Examples:
 
@@ -129,7 +124,7 @@ Examples:
 
 These should only be added if they stay broadly reusable.
 
-### 9. Hosted or Team Workflows
+### 8. Hosted or Team Workflows
 
 Possible future directions:
 

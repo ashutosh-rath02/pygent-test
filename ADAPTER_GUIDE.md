@@ -37,6 +37,7 @@ agentcheck/adapters/
 Current files:
 
 - `base.py`
+- `langgraph.py`
 - `python.py`
 - `openai_agents.py`
 - `template.py`
@@ -216,7 +217,6 @@ Every adapter should have at least:
 
 Likely high-value next targets:
 
-- LangGraph
 - CrewAI
 - another framework only if users ask for it
 

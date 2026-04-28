@@ -49,6 +49,7 @@ class TestReport:
 class SessionReport:
     created_at: str
     reports: list[TestReport]
+    suite_id: str | None = None
     baseline_comparison: dict[str, Any] = field(default_factory=dict)
     trace_file: str | None = None
     markdown_report_file: str | None = None
@@ -57,6 +58,7 @@ class SessionReport:
         return {
             "created_at": self.created_at,
             "reports": [report.to_dict() for report in self.reports],
+            "suite_id": self.suite_id,
             "baseline_comparison": self.baseline_comparison,
             "trace_file": self.trace_file,
             "markdown_report_file": self.markdown_report_file,
@@ -91,10 +93,11 @@ def build_test_report(test_name: str, runs: list[TestRun]) -> TestReport:
     )
 
 
-def new_session_report(reports: list[TestReport]) -> SessionReport:
+def new_session_report(reports: list[TestReport], suite_id: str | None = None) -> SessionReport:
     return SessionReport(
         created_at=datetime.now(timezone.utc).isoformat(),
         reports=reports,
+        suite_id=suite_id,
     )
 
 
@@ -109,6 +112,8 @@ def render_markdown_report(session_data: SessionReport | dict[str, Any]) -> str:
         "",
         f"- Created at: `{data['created_at']}`",
     ]
+    if data.get("suite_id"):
+        lines.append(f"- Suite: `{data['suite_id']}`")
     if data.get("trace_file"):
         lines.append(f"- Trace file: `{data['trace_file']}`")
     lines.append("")

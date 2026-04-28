@@ -26,6 +26,11 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
+[project.optional-dependencies]
+openai = ["openai-agents"]
+langgraph = ["langgraph", "langchain-core"]
+dev = ["pytest", "openai-agents", "langgraph", "langchain-core"]
+
 [project.urls]
 Homepage = "https://github.com/ashutosh-rath02/pygent-test"
 Repository = "https://github.com/ashutosh-rath02/pygent-test"

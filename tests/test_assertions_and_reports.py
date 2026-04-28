@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from agentcheck import AgentResult, ToolCall, expect
+from agentcheck.compare import compare_reports
 from agentcheck.report import render_markdown_report
 
 
@@ -27,6 +28,7 @@ def test_markdown_report_render_includes_summary_and_failures():
     markdown = render_markdown_report(
         {
             "created_at": "2026-04-28T00:00:00Z",
+            "suite_id": "framework_examples",
             "trace_file": ".agentcheck/traces/latest.json",
             "markdown_report_file": ".agentcheck/reports/latest.md",
             "reports": [
@@ -58,7 +60,33 @@ def test_markdown_report_render_includes_summary_and_failures():
     )
 
     assert "# AgentCheck Report" in markdown
+    assert "- Suite: `framework_examples`" in markdown
     assert "## test_booking_agent" in markdown
     assert "### Failures" in markdown
     assert "Regression detected." in markdown
     assert "100.0% -> 60.0%" in markdown
+
+
+def test_compare_reports_flags_suite_mismatch():
+    comparison = compare_reports(
+        [{"test_name": "test_booking_agent", "success_rate": 100.0, "average_steps": 2.0}],
+        [{"test_name": "test_langgraph_research_agent", "success_rate": 100.0, "average_steps": 3.0}],
+        current_suite="examples",
+        baseline_suite="framework_examples",
+    )
+
+    assert comparison["suite_mismatch"] is True
+    assert comparison["regressions"] == []
+    assert "Baseline suite mismatch" in comparison["summary"]
+
+
+def test_compare_reports_allows_cross_path_comparison_when_test_names_overlap():
+    comparison = compare_reports(
+        [{"test_name": "test_booking_agent", "success_rate": 0.0, "average_steps": 2.0}],
+        [{"test_name": "test_booking_agent", "success_rate": 100.0, "average_steps": 2.0}],
+        current_suite="regression_examples",
+        baseline_suite="examples",
+    )
+
+    assert comparison["suite_mismatch"] is False
+    assert len(comparison["regressions"]) == 1

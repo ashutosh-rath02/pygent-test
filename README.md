@@ -2,16 +2,23 @@
 
 AgentCheck is pytest for AI agents. Test behavior, not exact text.
 
-Install from source today:
+Install from PyPI:
+
+```bash
+pip install pygent-test
+```
+
+Install from source:
 
 ```bash
 python -m pip install -e .
 ```
 
-Planned published package install:
+Optional framework extras:
 
 ```bash
-pip install pygent-test
+pip install "pygent-test[langgraph]"
+pip install "pygent-test[openai]"
 ```
 
 ## What It Does
@@ -23,7 +30,6 @@ AgentCheck helps you verify agent behavior such as:
 - whether the agent stayed within a step budget
 - whether the agent claimed success without tool evidence
 - whether behavior regressed against a saved baseline
-<img width="1275" height="1718" alt="image" src="https://github.com/user-attachments/assets/26bf7aa6-4c91-4a2e-9337-32796d616f6e" />
 
 ## Current Status
 
@@ -35,6 +41,7 @@ This repo already supports:
 - pytest integration
 - a plain Python adapter
 - an OpenAI Agents SDK adapter
+- a LangGraph adapter
 - real live OpenAI agent tests in `integration_examples/`
 
 ## Quick Start
@@ -66,9 +73,12 @@ def test_booking_agent(agent: SimpleBookingAgent):
 
 ## Real Agent Testing
 
-AgentCheck has been exercised against real OpenAI Agents SDK agents.
+AgentCheck has been exercised against:
 
-Use the included live suite:
+- real OpenAI Agents SDK agents
+- real local LangGraph graphs built with `StateGraph`
+
+Use the included repo live suite:
 
 ```bash
 python -m agentcheck.cli test integration_examples
@@ -84,6 +94,15 @@ The included live tests cover:
 
 - a single-tool weather assistant
 - a multi-tool research assistant
+
+LangGraph support is tested through the regular unit suite and normalizes the common
+`invoke({"messages": [...]})` flow into `AgentResult`.
+
+Run the local LangGraph example with:
+
+```bash
+python -m agentcheck.cli test framework_examples
+```
 
 ## Documentation
 
@@ -121,7 +140,7 @@ python -m agentcheck.cli test regression_examples --fail-on-regression
 
 ## Smoke Test
 
-Run a quick end-to-end validation with:
+If you are working from a source checkout, run a quick end-to-end validation with:
 
 ```bash
 python scripts/smoke_test.py
@@ -137,6 +156,10 @@ Every `agentcheck test` run also writes:
 
 - JSON report: `.agentcheck/reports/latest.json`
 - Markdown report: `.agentcheck/reports/latest.md`
+
+Baselines are guarded against unrelated suites. If the current run and the saved
+baseline do not share any test names, AgentCheck warns instead of silently
+pretending the comparison is valid.
 
 ## Pytest
 
@@ -189,8 +212,7 @@ This is the first step.
 
 Near-term priorities:
 
-- cleaner reports, starting with Markdown output
-- a few more broadly useful assertions
+- cleaner regression summaries
 - better onboarding for testing a real agent in under 5 minutes
 - more adapters based on actual user demand
 

@@ -52,9 +52,15 @@ def _run_tests(root: Path, *, bless: bool, fail_on_regression: bool) -> int:
         return EXIT_CONFIG_ERROR
 
     reports, session, trace_payload = run_test_suite(definitions)
+    session.suite_id = str(root.resolve())
     current_data = [report.to_dict() for report in reports]
     baseline_data = load_baseline()
-    comparison = compare_reports(current_data, baseline_data["reports"] if baseline_data else None)
+    comparison = compare_reports(
+        current_data,
+        baseline_data["reports"] if baseline_data else None,
+        current_suite=session.suite_id,
+        baseline_suite=baseline_data.get("suite_id") if baseline_data else None,
+    )
     session.baseline_comparison = comparison
 
     trace_path = TRACE_DIR / "latest.json"
@@ -68,11 +74,13 @@ def _run_tests(root: Path, *, bless: bool, fail_on_regression: bool) -> int:
     _print_session_summary(session)
 
     if bless:
-        save_baseline({"reports": current_data})
+        save_baseline({"suite_id": session.suite_id, "reports": current_data})
         print(f"\nBaseline saved to {Path('.agentcheck/baselines/latest.json')}")
 
     any_behavior_failures = any(report.failed_runs for report in reports)
     any_regression = bool(comparison["regressions"])
+    if comparison.get("suite_mismatch") and fail_on_regression:
+        return EXIT_CONFIG_ERROR
     if fail_on_regression and any_regression:
         return EXIT_REGRESSION
     if any_behavior_failures:
@@ -87,8 +95,15 @@ def _compare_only() -> int:
         print("Latest report or baseline is missing.")
         return EXIT_CONFIG_ERROR
     report_data = read_json(latest_report)
-    comparison = compare_reports(report_data["reports"], baseline["reports"])
+    comparison = compare_reports(
+        report_data["reports"],
+        baseline["reports"],
+        current_suite=report_data.get("suite_id"),
+        baseline_suite=baseline.get("suite_id"),
+    )
     _print_comparison(comparison)
+    if comparison.get("suite_mismatch"):
+        return EXIT_CONFIG_ERROR
     return EXIT_REGRESSION if comparison["regressions"] else EXIT_SUCCESS
 
 
