@@ -18,6 +18,19 @@ def compare_reports(
             "summary": "No baseline found.",
         }
 
+    if current_suite and baseline_suite and current_suite != baseline_suite:
+        return {
+            "available": True,
+            "suite_mismatch": True,
+            "regressions": [],
+            "summary": (
+                "Baseline suite mismatch: "
+                f"current `{current_suite}` vs baseline `{baseline_suite}`. "
+                "Suite identities must match exactly. "
+                "Run `agentcheck bless <path>` for this suite."
+            ),
+        }
+
     baseline_map = {report["test_name"]: report for report in baseline}
     overlapping_names = {report["test_name"] for report in current if report["test_name"] in baseline_map}
 
@@ -29,7 +42,7 @@ def compare_reports(
             "summary": (
                 "Baseline suite mismatch: "
                 f"current `{current_suite}` vs baseline `{baseline_suite}`. "
-                "The suites do not share any test names. "
+                "The reports do not share any test names. "
                 "Run `agentcheck bless <path>` for this suite."
             ),
         }

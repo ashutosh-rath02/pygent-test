@@ -84,12 +84,22 @@ def test_compare_reports_flags_suite_mismatch():
     assert "Baseline suite mismatch" in comparison["summary"]
 
 
-def test_compare_reports_allows_cross_path_comparison_when_test_names_overlap():
+def test_compare_reports_flags_suite_mismatch_even_when_test_names_overlap():
     comparison = compare_reports(
         [{"test_name": "test_booking_agent", "success_rate": 0.0, "average_steps": 2.0}],
         [{"test_name": "test_booking_agent", "success_rate": 100.0, "average_steps": 2.0}],
         current_suite="regression_examples",
         baseline_suite="examples",
+    )
+
+    assert comparison["suite_mismatch"] is True
+    assert comparison["regressions"] == []
+
+
+def test_compare_reports_allows_legacy_comparison_when_suite_ids_are_missing():
+    comparison = compare_reports(
+        [{"test_name": "test_booking_agent", "success_rate": 0.0, "average_steps": 2.0}],
+        [{"test_name": "test_booking_agent", "success_rate": 100.0, "average_steps": 2.0}],
     )
 
     assert comparison["suite_mismatch"] is False

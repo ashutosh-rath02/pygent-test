@@ -479,9 +479,10 @@ What regression currently means:
 
 - success rate dropped compared with the baseline for the same test name
 
-AgentCheck also guards against unrelated suites. If the current run and the saved
-baseline do not share any test names, it warns about the mismatch instead of
-pretending the comparison is valid.
+AgentCheck also guards against unrelated suites. If the current suite and saved
+baseline suite do not match exactly, it warns about the mismatch instead of
+pretending the comparison is valid. For older baseline files without suite
+metadata, it falls back to matching test names.
 
 ## Smoke Testing
 

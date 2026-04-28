@@ -160,9 +160,10 @@ Every `agentcheck test` run also writes:
 Every `agentcheck bless <path>` stores a suite-specific baseline under
 `.agentcheck/baselines/`.
 
-Baselines are guarded against unrelated suites. If the current run and the saved
-baseline do not share any test names, AgentCheck warns instead of silently
-pretending the comparison is valid.
+Baselines are guarded against unrelated suites. If the current suite and saved
+baseline suite do not match exactly, AgentCheck warns instead of comparing them.
+For older baseline files without suite metadata, it falls back to matching test
+names.
 
 ## Pytest
 
