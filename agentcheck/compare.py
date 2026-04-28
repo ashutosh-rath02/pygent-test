@@ -15,6 +15,9 @@ def compare_reports(
             "available": False,
             "suite_mismatch": False,
             "regressions": [],
+            "matched_tests": [],
+            "current_only_tests": [],
+            "baseline_only_tests": [],
             "summary": "No baseline found.",
         }
 
@@ -23,6 +26,9 @@ def compare_reports(
             "available": True,
             "suite_mismatch": True,
             "regressions": [],
+            "matched_tests": [],
+            "current_only_tests": [],
+            "baseline_only_tests": [],
             "summary": (
                 "Baseline suite mismatch: "
                 f"current `{current_suite}` vs baseline `{baseline_suite}`. "
@@ -32,13 +38,20 @@ def compare_reports(
         }
 
     baseline_map = {report["test_name"]: report for report in baseline}
-    overlapping_names = {report["test_name"] for report in current if report["test_name"] in baseline_map}
+    current_names = {report["test_name"] for report in current}
+    baseline_names = set(baseline_map)
+    overlapping_names = current_names & baseline_names
+    current_only_tests = sorted(current_names - baseline_names)
+    baseline_only_tests = sorted(baseline_names - current_names)
 
     if not overlapping_names:
         return {
             "available": True,
             "suite_mismatch": True,
             "regressions": [],
+            "matched_tests": [],
+            "current_only_tests": current_only_tests,
+            "baseline_only_tests": baseline_only_tests,
             "summary": (
                 "Baseline suite mismatch: "
                 f"current `{current_suite}` vs baseline `{baseline_suite}`. "
@@ -60,5 +73,17 @@ def compare_reports(
                     "step_delta": report["average_steps"] - previous.get("average_steps", 0.0),
                 }
             )
-    summary = "Regression detected." if regressions else "No regression detected."
-    return {"available": True, "suite_mismatch": False, "regressions": regressions, "summary": summary}
+    matched_tests = sorted(overlapping_names)
+    if regressions:
+        summary = f"Regression detected in {len(regressions)} of {len(matched_tests)} matched test(s)."
+    else:
+        summary = f"No regression detected across {len(matched_tests)} matched test(s)."
+    return {
+        "available": True,
+        "suite_mismatch": False,
+        "regressions": regressions,
+        "matched_tests": matched_tests,
+        "current_only_tests": current_only_tests,
+        "baseline_only_tests": baseline_only_tests,
+        "summary": summary,
+    }

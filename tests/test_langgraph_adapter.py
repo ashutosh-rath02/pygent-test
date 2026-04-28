@@ -2,6 +2,11 @@ from __future__ import annotations
 
 from typing import Annotated, TypedDict
 
+import pytest
+
+pytest.importorskip("langchain_core.messages")
+pytest.importorskip("langgraph.graph")
+
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langgraph.graph import StateGraph, add_messages
 

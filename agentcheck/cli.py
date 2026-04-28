@@ -148,6 +148,21 @@ def _print_comparison(comparison: dict) -> None:
     if not comparison:
         return
     print(comparison["summary"])
+    matched_tests = comparison.get("matched_tests", [])
+    current_only_tests = comparison.get("current_only_tests", [])
+    baseline_only_tests = comparison.get("baseline_only_tests", [])
+    if matched_tests:
+        print("Matched tests:")
+        for test_name in matched_tests:
+            print(f"- {test_name}")
+    if current_only_tests:
+        print("Current-only tests:")
+        for test_name in current_only_tests:
+            print(f"- {test_name}")
+    if baseline_only_tests:
+        print("Baseline-only tests:")
+        for test_name in baseline_only_tests:
+            print(f"- {test_name}")
     for regression in comparison.get("regressions", []):
         print(
             f"- {regression['test_name']}: "

@@ -143,8 +143,25 @@ def render_markdown_report(session_data: SessionReport | dict[str, Any]) -> str:
         lines.append("## Baseline Comparison")
         lines.append("")
         lines.append(f"- Summary: {comparison['summary']}")
+        matched_tests = comparison.get("matched_tests", [])
+        current_only_tests = comparison.get("current_only_tests", [])
+        baseline_only_tests = comparison.get("baseline_only_tests", [])
+        if matched_tests:
+            lines.append(f"- Matched tests: {', '.join(f'`{name}`' for name in matched_tests)}")
+        if current_only_tests:
+            lines.append(
+                "- Current-only tests: "
+                + ", ".join(f"`{name}`" for name in current_only_tests)
+            )
+        if baseline_only_tests:
+            lines.append(
+                "- Baseline-only tests: "
+                + ", ".join(f"`{name}`" for name in baseline_only_tests)
+            )
         regressions = comparison.get("regressions", [])
         if regressions:
+            lines.append("")
+            lines.append("### Regressions")
             lines.append("")
             for regression in regressions:
                 lines.append(

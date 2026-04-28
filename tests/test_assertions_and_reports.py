@@ -50,7 +50,10 @@ def test_markdown_report_render_includes_summary_and_failures():
                 }
             ],
             "baseline_comparison": {
-                "summary": "Regression detected.",
+                "summary": "Regression detected in 1 of 1 matched test(s).",
+                "matched_tests": ["test_booking_agent"],
+                "current_only_tests": [],
+                "baseline_only_tests": [],
                 "regressions": [
                     {
                         "test_name": "test_booking_agent",
@@ -67,7 +70,9 @@ def test_markdown_report_render_includes_summary_and_failures():
     assert "- Suite: `framework_examples`" in markdown
     assert "## test_booking_agent" in markdown
     assert "### Failures" in markdown
-    assert "Regression detected." in markdown
+    assert "Regression detected in 1 of 1 matched test(s)." in markdown
+    assert "- Matched tests: `test_booking_agent`" in markdown
+    assert "### Regressions" in markdown
     assert "100.0% -> 60.0%" in markdown
 
 
@@ -82,6 +87,7 @@ def test_compare_reports_flags_suite_mismatch():
     assert comparison["suite_mismatch"] is True
     assert comparison["regressions"] == []
     assert "Baseline suite mismatch" in comparison["summary"]
+    assert comparison["matched_tests"] == []
 
 
 def test_compare_reports_flags_suite_mismatch_even_when_test_names_overlap():
@@ -104,6 +110,28 @@ def test_compare_reports_allows_legacy_comparison_when_suite_ids_are_missing():
 
     assert comparison["suite_mismatch"] is False
     assert len(comparison["regressions"]) == 1
+    assert comparison["matched_tests"] == ["test_booking_agent"]
+    assert comparison["current_only_tests"] == []
+    assert comparison["baseline_only_tests"] == []
+
+
+def test_compare_reports_tracks_unmatched_tests():
+    comparison = compare_reports(
+        [
+            {"test_name": "test_booking_agent", "success_rate": 100.0, "average_steps": 2.0},
+            {"test_name": "test_research_agent", "success_rate": 100.0, "average_steps": 3.0},
+        ],
+        [
+            {"test_name": "test_booking_agent", "success_rate": 100.0, "average_steps": 2.0},
+            {"test_name": "test_weather_agent", "success_rate": 100.0, "average_steps": 4.0},
+        ],
+    )
+
+    assert comparison["suite_mismatch"] is False
+    assert comparison["matched_tests"] == ["test_booking_agent"]
+    assert comparison["current_only_tests"] == ["test_research_agent"]
+    assert comparison["baseline_only_tests"] == ["test_weather_agent"]
+    assert comparison["summary"] == "No regression detected across 1 matched test(s)."
 
 
 def test_suite_baselines_are_isolated(monkeypatch):
