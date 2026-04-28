@@ -519,6 +519,7 @@ It currently:
 For real setup details, use:
 
 - [REAL_WORLD_TESTING.md](REAL_WORLD_TESTING.md)
+- [ADAPTER_GUIDE.md](ADAPTER_GUIDE.md)
 
 ## Writing a Real OpenAI Agent Test
 
@@ -583,6 +584,10 @@ Good adapter design principles:
 - prefer stable normalized fields
 - avoid framework leakage into assertions
 - keep adapter-specific quirks inside the adapter
+
+For a more concrete adapter contract and contributor template, use:
+
+- [ADAPTER_GUIDE.md](ADAPTER_GUIDE.md)
 
 ## Current Limitations
 

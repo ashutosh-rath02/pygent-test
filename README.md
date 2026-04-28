@@ -91,6 +91,8 @@ Use these docs depending on what you need:
 
 - [TECHNICAL_GUIDE.md](TECHNICAL_GUIDE.md)
   Detailed developer guide covering architecture, assertions, adapters, and workflows
+- [ADAPTER_GUIDE.md](ADAPTER_GUIDE.md)
+  How adapters are structured and how to build a new one
 - [REAL_WORLD_TESTING.md](REAL_WORLD_TESTING.md)
   Real OpenAI Agents SDK testing setup and examples
 - [ROADMAP.md](ROADMAP.md)
