@@ -93,6 +93,8 @@ Use these docs depending on what you need:
   Detailed developer guide covering architecture, assertions, adapters, and workflows
 - [REAL_WORLD_TESTING.md](REAL_WORLD_TESTING.md)
   Real OpenAI Agents SDK testing setup and examples
+- [ROADMAP.md](ROADMAP.md)
+  What is done, what is next, and what is planned later
 
 ## Included Demos
 
@@ -188,3 +190,5 @@ Longer-term directions:
 - better flakiness reporting
 - richer CI workflows
 - optional hosted features only if the core library proves valuable
+
+For a more detailed breakdown, see [ROADMAP.md](ROADMAP.md).
