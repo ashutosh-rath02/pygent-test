@@ -177,6 +177,23 @@ python -m pytest integration_examples -q
 
 Decorated `@agent_test(...)` functions are collected as AgentCheck test items, and each item still runs its configured repeated-run behavior.
 
+## CI
+
+AgentCheck already writes:
+
+- `.agentcheck/reports/latest.json`
+- `.agentcheck/reports/latest.md`
+
+In GitHub Actions, if `GITHUB_STEP_SUMMARY` is present, the Markdown report is
+also published to the step summary automatically.
+
+Example:
+
+```yaml
+- name: Run AgentCheck examples
+  run: python -m agentcheck.cli test examples --fail-on-regression
+```
+
 ## Assertions
 
 Current built-in assertions:

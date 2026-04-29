@@ -525,6 +525,13 @@ How it works:
 - pytest does not run them as normal fixture-based test functions
 - each collected test still executes through AgentCheck's repeated-run logic
 
+## CI Output
+
+AgentCheck already writes JSON and Markdown artifacts under `.agentcheck/reports/`.
+
+In GitHub Actions, if `GITHUB_STEP_SUMMARY` is available, AgentCheck also writes
+the Markdown report to the step summary automatically.
+
 ## Adapters
 
 Adapters convert framework-specific runtime outputs into `AgentResult`.

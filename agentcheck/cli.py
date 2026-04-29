@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
 from .baseline import load_baseline, save_baseline
 from .compare import compare_reports
 from .discovery import collect_registered_tests, discover_test_files, import_test_file
-from .report import SessionReport, render_markdown_report
+from .report import SessionReport, render_markdown_report, write_github_step_summary
 from .runners import run_test_suite
 from .storage import REPORT_DIR, TRACE_DIR, ensure_artifact_dirs, read_json, write_json
 
@@ -70,8 +71,12 @@ def _run_tests(root: Path, *, bless: bool, fail_on_regression: bool) -> int:
     session.markdown_report_file = str(markdown_report_path)
     write_json(trace_path, trace_payload)
     write_json(report_path, session.to_dict())
-    markdown_report_path.write_text(render_markdown_report(session), encoding="utf-8")
+    markdown = render_markdown_report(session)
+    markdown_report_path.write_text(markdown, encoding="utf-8")
+    summary_written = write_github_step_summary(markdown, os.environ.get("GITHUB_STEP_SUMMARY"))
     _print_session_summary(session)
+    if summary_written:
+        print(f"GitHub step summary: {os.environ['GITHUB_STEP_SUMMARY']}")
 
     if bless:
         baseline_path = save_baseline({"suite_id": session.suite_id, "reports": current_data}, session.suite_id)

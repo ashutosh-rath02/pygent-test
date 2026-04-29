@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
@@ -174,3 +175,12 @@ def render_markdown_report(session_data: SessionReport | dict[str, Any]) -> str:
         lines.append("")
 
     return "\n".join(lines).rstrip() + "\n"
+
+
+def write_github_step_summary(markdown: str, summary_path: str | None) -> bool:
+    if not summary_path:
+        return False
+    path = Path(summary_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(markdown, encoding="utf-8")
+    return True

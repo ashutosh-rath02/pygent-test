@@ -6,7 +6,7 @@ from uuid import uuid4
 from agentcheck import AgentResult, ToolCall, expect
 from agentcheck.baseline import load_baseline, save_baseline, suite_baseline_path
 from agentcheck.compare import compare_reports
-from agentcheck.report import render_markdown_report
+from agentcheck.report import render_markdown_report, write_github_step_summary
 
 
 def test_tool_count_assertions_pass_in_collected_mode():
@@ -154,3 +154,13 @@ def test_suite_baselines_are_isolated(monkeypatch):
     assert load_baseline(first_suite) == first_data
     assert load_baseline(second_suite) == second_data
     assert load_baseline(str(workspace_tmp / "missing_suite")) is None
+
+
+def test_write_github_step_summary_writes_markdown():
+    summary_path = Path(".build-tmp") / f"step-summary-{uuid4().hex}.md"
+    markdown = "# AgentCheck Report\n"
+
+    written = write_github_step_summary(markdown, str(summary_path))
+
+    assert written is True
+    assert summary_path.read_text(encoding="utf-8") == markdown
