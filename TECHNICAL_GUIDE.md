@@ -681,9 +681,9 @@ For a more concrete adapter contract and contributor template, use:
 
 Current limitations include:
 
-- only plain Python and OpenAI Agents SDK adapters are implemented
+- CrewAI adapter is not implemented yet
 - regression comparison is still simple
-- report generation is still basic
+- report generation is still intentionally lightweight
 - live tests depend on the local API key and environment setup
 
 ## Recommended Adoption Path

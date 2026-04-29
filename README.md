@@ -21,6 +21,23 @@ pip install "pygent-test[langgraph]"
 pip install "pygent-test[openai]"
 ```
 
+## Start Here
+
+If you want the fastest local validation from a source checkout:
+
+```bash
+python -m pip install -e .
+python -m agentcheck.cli test examples
+python -m agentcheck.cli bless examples
+python -m agentcheck.cli test regression_examples
+```
+
+That flow shows:
+
+- a healthy agent test passing
+- a suite-specific baseline being saved
+- an intentionally broken agent failing for clear behavioral reasons
+
 ## What It Does
 
 AgentCheck helps you verify agent behavior such as:
@@ -50,6 +67,13 @@ This repo already supports:
 python -m pip install -e .
 python -m agentcheck.cli test examples
 ```
+
+Expected result:
+
+- `test_booking_agent`
+- `Passed: 5`
+- `Failed: 0`
+- `Success rate: 100.0%`
 
 ## Minimal Example
 
@@ -104,6 +128,12 @@ Run the local LangGraph example with:
 python -m agentcheck.cli test framework_examples
 ```
 
+If LangGraph dependencies are not installed yet:
+
+```bash
+pip install "pygent-test[langgraph]"
+```
+
 ## Documentation
 
 Use these docs depending on what you need:
@@ -128,7 +158,7 @@ python -m agentcheck.cli test examples
 Intentional failure demo:
 
 ```bash
-python -m agentcheck.cli test regression_examples --fail-on-regression
+python -m agentcheck.cli test regression_examples
 ```
 
 ## Commands
@@ -190,6 +220,16 @@ also published to the step summary automatically.
 Example:
 
 ```yaml
+- name: Run AgentCheck examples
+  run: python -m agentcheck.cli test examples --fail-on-regression
+```
+
+Minimal baseline-aware CI flow:
+
+```yaml
+- name: Bless demo baseline
+  run: python -m agentcheck.cli bless examples
+
 - name: Run AgentCheck examples
   run: python -m agentcheck.cli test examples --fail-on-regression
 ```
