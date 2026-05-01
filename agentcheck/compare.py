@@ -3,6 +3,54 @@ from __future__ import annotations
 from typing import Any
 
 
+def _tool_coverage_drops(
+    current_report: dict[str, Any],
+    baseline_report: dict[str, Any],
+) -> list[dict[str, Any]]:
+    current_tools = current_report.get("tool_presence", {})
+    baseline_tools = baseline_report.get("tool_presence", {})
+    drops: list[dict[str, Any]] = []
+    for tool_name in sorted(set(current_tools) | set(baseline_tools)):
+        previous_rate = float(baseline_tools.get(tool_name, 0.0))
+        current_rate = float(current_tools.get(tool_name, 0.0))
+        if current_rate >= previous_rate:
+            continue
+        drops.append(
+            {
+                "tool_name": tool_name,
+                "previous_rate": previous_rate,
+                "current_rate": current_rate,
+                "delta": current_rate - previous_rate,
+            }
+        )
+    return sorted(drops, key=lambda item: (item["delta"], item["tool_name"]))
+
+
+def _primary_path_change(
+    current_report: dict[str, Any],
+    baseline_report: dict[str, Any],
+) -> dict[str, Any] | None:
+    current_paths = current_report.get("common_tool_paths", [])
+    baseline_paths = baseline_report.get("common_tool_paths", [])
+    current_primary = current_paths[0] if current_paths else None
+    baseline_primary = baseline_paths[0] if baseline_paths else None
+
+    current_path = current_primary.get("path", []) if current_primary else []
+    baseline_path = baseline_primary.get("path", []) if baseline_primary else []
+    if current_path == baseline_path:
+        return None
+
+    if not current_primary and not baseline_primary:
+        return None
+
+    return {
+        "previous_path": baseline_path,
+        "current_path": current_path,
+        "previous_rate": float(baseline_primary.get("rate", 0.0)) if baseline_primary else 0.0,
+        "current_rate": float(current_primary.get("rate", 0.0)) if current_primary else 0.0,
+    }
+
+
 def compare_reports(
     current: list[dict[str, Any]],
     baseline: list[dict[str, Any]] | None,
@@ -71,6 +119,8 @@ def compare_reports(
                     "previous_success_rate": previous["success_rate"],
                     "current_success_rate": report["success_rate"],
                     "step_delta": report["average_steps"] - previous.get("average_steps", 0.0),
+                    "tool_coverage_drops": _tool_coverage_drops(report, previous),
+                    "primary_path_change": _primary_path_change(report, previous),
                 }
             )
     matched_tests = sorted(overlapping_names)

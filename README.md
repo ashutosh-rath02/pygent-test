@@ -2,6 +2,9 @@
 
 AgentCheck is pytest for AI agents. Test behavior, not exact text.
 
+- GitHub: `https://github.com/ashutosh-rath02/pygent-test/`
+- PyPI: `https://pypi.org/project/pygent-test/`
+
 Install from PyPI:
 
 ```bash

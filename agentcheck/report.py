@@ -40,6 +40,8 @@ class TestReport:
     success_rate: float
     failure_reasons: list[str]
     average_steps: float
+    tool_presence: dict[str, float] = field(default_factory=dict)
+    common_tool_paths: list[dict[str, Any]] = field(default_factory=list)
     regression: bool | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -70,6 +72,43 @@ def new_run_id() -> str:
     return uuid4().hex
 
 
+def _build_tool_presence(runs: list[TestRun]) -> dict[str, float]:
+    total_runs = len(runs)
+    if not total_runs:
+        return {}
+
+    tool_counts = Counter()
+    for run in runs:
+        for tool_name in {tool.name for tool in run.result.tool_calls}:
+            tool_counts[tool_name] += 1
+    return {
+        tool_name: (count / total_runs) * 100
+        for tool_name, count in sorted(tool_counts.items())
+    }
+
+
+def _build_common_tool_paths(runs: list[TestRun], *, limit: int = 3) -> list[dict[str, Any]]:
+    total_runs = len(runs)
+    if not total_runs:
+        return []
+
+    path_counts = Counter(
+        tuple(tool.name for tool in run.result.tool_calls)
+        for run in runs
+        if run.result.tool_calls
+    )
+    common_paths: list[dict[str, Any]] = []
+    for path, count in path_counts.most_common(limit):
+        common_paths.append(
+            {
+                "path": list(path),
+                "count": count,
+                "rate": (count / total_runs) * 100,
+            }
+        )
+    return common_paths
+
+
 def build_test_report(test_name: str, runs: list[TestRun]) -> TestReport:
     total_runs = len(runs)
     passed_runs = sum(1 for run in runs if run.passed)
@@ -91,6 +130,8 @@ def build_test_report(test_name: str, runs: list[TestRun]) -> TestReport:
         success_rate=(passed_runs / total_runs) * 100 if total_runs else 0.0,
         failure_reasons=failure_reasons,
         average_steps=average_steps,
+        tool_presence=_build_tool_presence(runs),
+        common_tool_paths=_build_common_tool_paths(runs),
     )
 
 
@@ -172,6 +213,21 @@ def render_markdown_report(session_data: SessionReport | dict[str, Any]) -> str:
                     f"{regression['current_success_rate']:.1f}% "
                     f"(step delta {regression['step_delta']:+.1f})"
                 )
+                primary_path_change = regression.get("primary_path_change")
+                if primary_path_change:
+                    previous_path = " -> ".join(primary_path_change["previous_path"]) or "(no tools)"
+                    current_path = " -> ".join(primary_path_change["current_path"]) or "(no tools)"
+                    lines.append(
+                        "  - Primary tool path changed: "
+                        f"`{previous_path}` ({primary_path_change['previous_rate']:.1f}%) -> "
+                        f"`{current_path}` ({primary_path_change['current_rate']:.1f}%)"
+                    )
+                for drop in regression.get("tool_coverage_drops", []):
+                    lines.append(
+                        "  - Tool coverage dropped: "
+                        f"`{drop['tool_name']}` "
+                        f"{drop['previous_rate']:.1f}% -> {drop['current_rate']:.1f}%"
+                    )
         lines.append("")
 
     return "\n".join(lines).rstrip() + "\n"

@@ -6,7 +6,13 @@ from uuid import uuid4
 from agentcheck import AgentResult, ToolCall, expect
 from agentcheck.baseline import load_baseline, save_baseline, suite_baseline_path
 from agentcheck.compare import compare_reports
-from agentcheck.report import render_markdown_report, write_github_step_summary
+from agentcheck.report import (
+    TestRun as AgentTestRun,
+    build_test_report,
+    new_run_id,
+    render_markdown_report,
+    write_github_step_summary,
+)
 
 
 def test_tool_count_assertions_pass_in_collected_mode():
@@ -60,6 +66,20 @@ def test_markdown_report_render_includes_summary_and_failures():
                         "previous_success_rate": 100.0,
                         "current_success_rate": 60.0,
                         "step_delta": 0.4,
+                        "primary_path_change": {
+                            "previous_path": ["restaurant_search", "booking_tool"],
+                            "current_path": ["restaurant_search"],
+                            "previous_rate": 100.0,
+                            "current_rate": 60.0,
+                        },
+                        "tool_coverage_drops": [
+                            {
+                                "tool_name": "booking_tool",
+                                "previous_rate": 100.0,
+                                "current_rate": 60.0,
+                                "delta": -40.0,
+                            }
+                        ],
                     }
                 ],
             },
@@ -74,6 +94,8 @@ def test_markdown_report_render_includes_summary_and_failures():
     assert "- Matched tests: `test_booking_agent`" in markdown
     assert "### Regressions" in markdown
     assert "100.0% -> 60.0%" in markdown
+    assert "Primary tool path changed" in markdown
+    assert "Tool coverage dropped: `booking_tool` 100.0% -> 60.0%" in markdown
 
 
 def test_compare_reports_flags_suite_mismatch():
@@ -132,6 +154,116 @@ def test_compare_reports_tracks_unmatched_tests():
     assert comparison["current_only_tests"] == ["test_research_agent"]
     assert comparison["baseline_only_tests"] == ["test_weather_agent"]
     assert comparison["summary"] == "No regression detected across 1 matched test(s)."
+
+
+def test_build_test_report_tracks_tool_presence_and_common_paths():
+    runs = [
+        AgentTestRun(
+            test_name="test_booking_agent",
+            run_id=new_run_id(),
+            result=AgentResult(
+                input="Book dinner",
+                final_output="Done",
+                tool_calls=[
+                    ToolCall(name="restaurant_search"),
+                    ToolCall(name="booking_tool"),
+                ],
+                steps=2,
+            ),
+        ),
+        AgentTestRun(
+            test_name="test_booking_agent",
+            run_id=new_run_id(),
+            result=AgentResult(
+                input="Book dinner",
+                final_output="Done",
+                tool_calls=[ToolCall(name="restaurant_search")],
+                steps=1,
+            ),
+            passed=False,
+            error="booking_tool missing",
+        ),
+    ]
+
+    report = build_test_report("test_booking_agent", runs)
+
+    assert report.tool_presence == {
+        "booking_tool": 50.0,
+        "restaurant_search": 100.0,
+    }
+    assert report.common_tool_paths == [
+        {
+            "path": ["restaurant_search", "booking_tool"],
+            "count": 1,
+            "rate": 50.0,
+        },
+        {
+            "path": ["restaurant_search"],
+            "count": 1,
+            "rate": 50.0,
+        },
+    ]
+
+
+def test_compare_reports_includes_behavior_deltas_for_regressions():
+    comparison = compare_reports(
+        [
+            {
+                "test_name": "test_booking_agent",
+                "success_rate": 60.0,
+                "average_steps": 2.4,
+                "tool_presence": {
+                    "restaurant_search": 100.0,
+                    "booking_tool": 60.0,
+                },
+                "common_tool_paths": [
+                    {"path": ["restaurant_search"], "count": 3, "rate": 60.0}
+                ],
+            }
+        ],
+        [
+            {
+                "test_name": "test_booking_agent",
+                "success_rate": 100.0,
+                "average_steps": 2.0,
+                "tool_presence": {
+                    "restaurant_search": 100.0,
+                    "booking_tool": 100.0,
+                },
+                "common_tool_paths": [
+                    {
+                        "path": ["restaurant_search", "booking_tool"],
+                        "count": 5,
+                        "rate": 100.0,
+                    }
+                ],
+            }
+        ],
+    )
+
+    assert comparison["summary"] == "Regression detected in 1 of 1 matched test(s)."
+    assert comparison["regressions"] == [
+        {
+            "test_name": "test_booking_agent",
+            "previous_success_rate": 100.0,
+            "current_success_rate": 60.0,
+            "step_delta": 0.3999999999999999,
+            "tool_coverage_drops": [
+                {
+                    "tool_name": "booking_tool",
+                    "previous_rate": 100.0,
+                    "current_rate": 60.0,
+                    "delta": -40.0,
+                }
+            ],
+            "primary_path_change": {
+                "previous_path": ["restaurant_search", "booking_tool"],
+                "current_path": ["restaurant_search"],
+                "previous_rate": 100.0,
+                "current_rate": 60.0,
+            },
+        }
+    ]
 
 
 def test_suite_baselines_are_isolated(monkeypatch):

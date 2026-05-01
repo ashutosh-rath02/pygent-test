@@ -2,6 +2,11 @@
 
 This guide explains how AgentCheck works, how to write tests with it, and how to extend it.
 
+Project links:
+
+- GitHub: `https://github.com/ashutosh-rath02/pygent-test/`
+- PyPI: `https://pypi.org/project/pygent-test/`
+
 ## Who This Is For
 
 This document is for developers who want to:
