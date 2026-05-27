@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import uuid4
 
+import pytest
 from agentcheck import AgentResult, ToolCall, expect
 
 
@@ -156,20 +157,22 @@ def test_scenario_pack_round_trips_json():
 
 # ── HTTP adapter ─────────────────────────────────────────────────────────────
 
+def _mock_http_response(body: bytes):
+    from unittest.mock import MagicMock
+    resp = MagicMock()
+    resp.read.return_value = body
+    resp.__enter__ = lambda s: s
+    resp.__exit__ = MagicMock(return_value=False)
+    return resp
+
+
 def test_http_adapter_parses_success_response():
     from agentcheck.adapters.http import HttpAdapter
-    from unittest.mock import patch, MagicMock
-    import io
+    from unittest.mock import patch
 
     adapter = HttpAdapter("http://fake-agent.test/run")
-    response_body = b'{"output": "Task done", "tool_calls": [{"name": "search", "args": {}, "success": true}], "steps": 2}'
-
-    mock_resp = MagicMock()
-    mock_resp.read.return_value = response_body
-    mock_resp.__enter__ = lambda s: s
-    mock_resp.__exit__ = MagicMock(return_value=False)
-
-    with patch("agentcheck.adapters.http.urllib_request.urlopen", return_value=mock_resp):
+    body = b'{"output": "Task done", "tool_calls": [{"name": "search", "args": {}, "success": true}], "steps": 2}'
+    with patch("agentcheck.adapters.http.urllib_request.urlopen", return_value=_mock_http_response(body)):
         result = adapter.run_input("Find me a restaurant")
 
     assert result.final_output == "Task done"
@@ -186,15 +189,223 @@ def test_http_adapter_handles_http_error():
     from urllib.error import HTTPError
 
     adapter = HttpAdapter("http://fake-agent.test/run")
-    with patch("agentcheck.adapters.http.urllib_request.urlopen", side_effect=HTTPError("url", 503, "Service Unavailable", {}, None)):
+    with patch("agentcheck.adapters.http.urllib_request.urlopen",
+               side_effect=HTTPError("url", 503, "Service Unavailable", {}, None)):
         result = adapter.run_input("query")
 
     assert result.final_output == ""
     assert any("503" in e for e in result.errors)
 
 
+def test_http_adapter_handles_url_error():
+    from agentcheck.adapters.http import HttpAdapter
+    from unittest.mock import patch
+    from urllib.error import URLError
+
+    adapter = HttpAdapter("http://unreachable.test/run")
+    with patch("agentcheck.adapters.http.urllib_request.urlopen",
+               side_effect=URLError("Connection refused")):
+        result = adapter.run_input("query")
+
+    assert result.final_output == ""
+    assert result.errors
+    assert "Connection" in result.errors[0] or "refused" in result.errors[0].lower()
+
+
+def test_http_adapter_handles_json_parse_error():
+    from agentcheck.adapters.http import HttpAdapter
+    from unittest.mock import patch
+
+    adapter = HttpAdapter("http://fake-agent.test/run")
+    with patch("agentcheck.adapters.http.urllib_request.urlopen",
+               return_value=_mock_http_response(b"not valid json {")):
+        result = adapter.run_input("query")
+
+    assert result.final_output == ""
+    assert result.errors
+    assert "JSON" in result.errors[0] or "parse" in result.errors[0].lower()
+
+
+def test_http_adapter_sets_auth_header(monkeypatch):
+    from agentcheck.adapters.http import HttpAdapter
+
+    monkeypatch.setenv("TEST_API_KEY", "secret-token-123")
+    adapter = HttpAdapter("http://agent.test/run", auth_env_var="TEST_API_KEY")
+    assert adapter._headers.get("Authorization") == "Bearer secret-token-123"
+
+
+def test_http_adapter_missing_auth_env_var_does_not_set_header(monkeypatch):
+    from agentcheck.adapters.http import HttpAdapter
+
+    monkeypatch.delenv("ABSENT_KEY", raising=False)
+    adapter = HttpAdapter("http://agent.test/run", auth_env_var="ABSENT_KEY")
+    assert "Authorization" not in adapter._headers
+
+
+def test_http_adapter_request_body_uses_custom_key():
+    from agentcheck.adapters.http import HttpAdapter
+    import json
+
+    adapter = HttpAdapter("http://fake.test/run", request_key="message")
+    parsed = json.loads(adapter._build_body("hello world"))
+    assert parsed["message"] == "hello world"
+    assert "input" not in parsed
+
+
+def test_http_adapter_request_extra_merged_into_body():
+    from agentcheck.adapters.http import HttpAdapter
+    import json
+
+    adapter = HttpAdapter("http://fake.test/run", request_extra={"model": "gpt-4o", "temperature": 0})
+    parsed = json.loads(adapter._build_body("do something"))
+    assert parsed["input"] == "do something"
+    assert parsed["model"] == "gpt-4o"
+    assert parsed["temperature"] == 0
+
+
+def test_http_adapter_parses_tool_key_alias():
+    """'tool' key is accepted as alias for 'name'."""
+    from agentcheck.adapters.http import HttpAdapter
+    from unittest.mock import patch
+
+    adapter = HttpAdapter("http://fake.test/run")
+    body = b'{"output": "done", "tool_calls": [{"tool": "search", "arguments": {"q": "test"}, "ok": true}]}'
+    with patch("agentcheck.adapters.http.urllib_request.urlopen", return_value=_mock_http_response(body)):
+        result = adapter.run_input("query")
+
+    assert result.tool_calls[0].name == "search"
+    assert result.tool_calls[0].args == {"q": "test"}
+    assert result.tool_calls[0].success is True
+
+
+def test_http_adapter_parses_input_key_alias():
+    """'input' key is accepted as alias for 'args'."""
+    from agentcheck.adapters.http import HttpAdapter
+    from unittest.mock import patch
+
+    adapter = HttpAdapter("http://fake.test/run")
+    body = b'{"output": "done", "tool_calls": [{"name": "fetch", "input": {"url": "http://x"}}]}'
+    with patch("agentcheck.adapters.http.urllib_request.urlopen", return_value=_mock_http_response(body)):
+        result = adapter.run_input("query")
+
+    assert result.tool_calls[0].args == {"url": "http://x"}
+
+
+def test_http_adapter_parses_result_key_alias():
+    """'result' key is accepted as alias for 'output'."""
+    from agentcheck.adapters.http import HttpAdapter
+    from unittest.mock import patch
+
+    adapter = HttpAdapter("http://fake.test/run")
+    body = b'{"output": "done", "tool_calls": [{"name": "fetch", "result": "page content"}]}'
+    with patch("agentcheck.adapters.http.urllib_request.urlopen", return_value=_mock_http_response(body)):
+        result = adapter.run_input("query")
+
+    assert result.tool_calls[0].output == "page content"
+
+
+def test_http_adapter_parses_string_tool_calls():
+    """Tool calls array may contain plain strings (just tool names)."""
+    from agentcheck.adapters.http import HttpAdapter
+    from unittest.mock import patch
+
+    adapter = HttpAdapter("http://fake.test/run")
+    body = b'{"output": "done", "tool_calls": ["search", "book"]}'
+    with patch("agentcheck.adapters.http.urllib_request.urlopen", return_value=_mock_http_response(body)):
+        result = adapter.run_input("query")
+
+    assert [t.name for t in result.tool_calls] == ["search", "book"]
+
+
+def test_http_adapter_empty_tool_calls_list():
+    from agentcheck.adapters.http import HttpAdapter
+    from unittest.mock import patch
+
+    adapter = HttpAdapter("http://fake.test/run")
+    body = b'{"output": "done", "tool_calls": []}'
+    with patch("agentcheck.adapters.http.urllib_request.urlopen", return_value=_mock_http_response(body)):
+        result = adapter.run_input("query")
+
+    assert result.tool_calls == []
+
+
+def test_http_adapter_tools_key_none_disables_parsing():
+    """response_tools_key=None means tool_calls are never read from the response."""
+    from agentcheck.adapters.http import HttpAdapter
+    from unittest.mock import patch
+
+    adapter = HttpAdapter("http://fake.test/run", response_tools_key=None)
+    body = b'{"output": "done", "tool_calls": [{"name": "search"}]}'
+    with patch("agentcheck.adapters.http.urllib_request.urlopen", return_value=_mock_http_response(body)):
+        result = adapter.run_input("query")
+
+    assert result.tool_calls == []
+
+
+def test_http_adapter_uses_reported_latency_from_response():
+    from agentcheck.adapters.http import HttpAdapter
+    from unittest.mock import patch
+
+    adapter = HttpAdapter("http://fake.test/run")
+    body = b'{"output": "done", "latency": 0.42}'
+    with patch("agentcheck.adapters.http.urllib_request.urlopen", return_value=_mock_http_response(body)):
+        result = adapter.run_input("query")
+
+    assert result.latency == pytest.approx(0.42)
+
+
+def test_http_adapter_uses_reported_cost_from_response():
+    from agentcheck.adapters.http import HttpAdapter
+    from unittest.mock import patch
+
+    adapter = HttpAdapter("http://fake.test/run")
+    body = b'{"output": "done", "cost": 0.0015}'
+    with patch("agentcheck.adapters.http.urllib_request.urlopen", return_value=_mock_http_response(body)):
+        result = adapter.run_input("query")
+
+    assert result.cost == pytest.approx(0.0015)
+
+
+def test_http_adapter_steps_fallback_to_tool_count():
+    """When 'steps' key is absent, steps = len(tool_calls)."""
+    from agentcheck.adapters.http import HttpAdapter
+    from unittest.mock import patch
+
+    adapter = HttpAdapter("http://fake.test/run")
+    body = b'{"output": "done", "tool_calls": [{"name": "a"}, {"name": "b"}]}'
+    with patch("agentcheck.adapters.http.urllib_request.urlopen", return_value=_mock_http_response(body)):
+        result = adapter.run_input("query")
+
+    assert result.steps == 2
+
+
+def test_http_adapter_custom_response_output_key():
+    from agentcheck.adapters.http import HttpAdapter
+    from unittest.mock import patch
+
+    adapter = HttpAdapter("http://fake.test/run", response_output_key="answer")
+    body = b'{"answer": "42", "output": "ignored"}'
+    with patch("agentcheck.adapters.http.urllib_request.urlopen", return_value=_mock_http_response(body)):
+        result = adapter.run_input("query")
+
+    assert result.final_output == "42"
+
+
+def test_http_adapter_metadata_contains_url():
+    from agentcheck.adapters.http import HttpAdapter
+    from unittest.mock import patch
+
+    adapter = HttpAdapter("http://my-agent.test/run")
+    body = b'{"output": "done"}'
+    with patch("agentcheck.adapters.http.urllib_request.urlopen", return_value=_mock_http_response(body)):
+        result = adapter.run_input("query")
+
+    assert result.metadata.get("http_url") == "http://my-agent.test/run"
+
+
 def test_http_adapter_from_env(monkeypatch):
     from agentcheck.adapters.http import HttpAdapter
+
     monkeypatch.setenv("MY_AGENT_URL", "http://agent.test/run")
     adapter = HttpAdapter.from_env(url_env_var="MY_AGENT_URL", auth_env_var=None)
     assert adapter.url == "http://agent.test/run"
@@ -202,7 +413,7 @@ def test_http_adapter_from_env(monkeypatch):
 
 def test_http_adapter_from_env_missing_url(monkeypatch):
     from agentcheck.adapters.http import HttpAdapter
-    import pytest
+
     monkeypatch.delenv("MISSING_URL_VAR", raising=False)
     with pytest.raises(ValueError, match="MISSING_URL_VAR"):
         HttpAdapter.from_env(url_env_var="MISSING_URL_VAR", auth_env_var=None)
@@ -212,6 +423,7 @@ def test_http_adapter_from_env_missing_url(monkeypatch):
 
 def test_crewai_adapter_normalize_string_output():
     from agentcheck.adapters.crewai import CrewAIAdapter
+
     adapter = CrewAIAdapter()
     result = adapter.normalize("What is AI?", "AI stands for Artificial Intelligence.")
     assert result.final_output == "AI stands for Artificial Intelligence."
@@ -232,6 +444,192 @@ def test_crewai_adapter_normalize_crew_result_object():
     result = adapter.normalize("query", FakeCrew())
     assert result.final_output == "Final answer here"
     assert result.tool_calls[0].name == "research_task"
+
+
+def test_crewai_adapter_normalize_dict_output():
+    from agentcheck.adapters.crewai import CrewAIAdapter
+
+    adapter = CrewAIAdapter()
+    result = adapter.normalize("q", {"output": "result text"})
+    assert result.final_output == "result text"
+
+
+def test_crewai_adapter_normalize_unknown_type_falls_back_to_str():
+    from agentcheck.adapters.crewai import CrewAIAdapter
+
+    adapter = CrewAIAdapter()
+    result = adapter.normalize("q", 42)
+    assert result.final_output == "42"
+
+
+def test_crewai_adapter_extract_errors_list():
+    from agentcheck.adapters.crewai import CrewAIAdapter
+
+    adapter = CrewAIAdapter()
+    result = adapter.normalize("q", {"errors": ["tool failed", "timeout"]})
+    assert "tool failed" in result.errors
+    assert "timeout" in result.errors
+
+
+def test_crewai_adapter_extract_errors_string():
+    from agentcheck.adapters.crewai import CrewAIAdapter
+
+    adapter = CrewAIAdapter()
+    result = adapter.normalize("q", {"error": "something went wrong"})
+    assert result.errors == ["something went wrong"]
+
+
+def test_crewai_adapter_extract_cost_from_token_usage():
+    from agentcheck.adapters.crewai import CrewAIAdapter
+
+    class FakeUsage:
+        total_cost = 0.0023
+
+    class FakeResult:
+        raw = "answer"
+        tasks_output = None
+        token_usage = FakeUsage()
+        error = None
+
+    adapter = CrewAIAdapter()
+    result = adapter.normalize("q", FakeResult())
+    assert result.cost == pytest.approx(0.0023)
+
+
+def test_crewai_adapter_no_cost_when_no_usage():
+    from agentcheck.adapters.crewai import CrewAIAdapter
+
+    adapter = CrewAIAdapter()
+    result = adapter.normalize("q", "plain answer")
+    assert result.cost is None
+
+
+def test_crewai_adapter_tasks_output_dict_items():
+    """tasks_output as a list of dicts — both success and error cases."""
+    from agentcheck.adapters.crewai import CrewAIAdapter
+
+    adapter = CrewAIAdapter()
+    result = adapter.normalize("q", {
+        "raw": "done",
+        "tasks_output": [
+            {"name": "task_a", "raw": "out_a", "error": None},
+            {"name": "task_b", "raw": "out_b", "error": "oops"},
+        ],
+    })
+    assert len(result.tool_calls) == 2
+    assert result.tool_calls[0].name == "task_a"
+    assert result.tool_calls[0].success is True
+    assert result.tool_calls[1].name == "task_b"
+    assert result.tool_calls[1].success is False
+
+
+def test_crewai_adapter_tasks_output_single_object():
+    """tasks_output as a single non-list object is still wrapped into one ToolCall."""
+    from agentcheck.adapters.crewai import CrewAIAdapter
+
+    adapter = CrewAIAdapter()
+    result = adapter.normalize("q", {
+        "raw": "done",
+        "tasks_output": {"name": "solo_task", "raw": "output", "error": None},
+    })
+    assert len(result.tool_calls) == 1
+    assert result.tool_calls[0].name == "solo_task"
+
+
+def test_crewai_adapter_run_calls_kickoff(monkeypatch):
+    """run() calls crew.kickoff() with all prompt aliases and returns normalized result."""
+    import sys
+    from unittest.mock import MagicMock
+    from agentcheck.adapters.crewai import CrewAIAdapter
+
+    monkeypatch.setitem(sys.modules, "crewai", MagicMock())
+
+    fake_crew = MagicMock()
+    fake_crew.kickoff.return_value = "Task complete"
+
+    adapter = CrewAIAdapter()
+    result = adapter.run(fake_crew, "run the crew")
+
+    fake_crew.kickoff.assert_called_once_with(
+        inputs={"input": "run the crew", "prompt": "run the crew", "query": "run the crew"}
+    )
+    assert result.final_output == "Task complete"
+    assert not result.errors
+
+
+def test_crewai_adapter_run_handles_kickoff_exception(monkeypatch):
+    """Exceptions from kickoff() are caught and surfaced as errors on AgentResult."""
+    import sys
+    from unittest.mock import MagicMock
+    from agentcheck.adapters.crewai import CrewAIAdapter
+
+    monkeypatch.setitem(sys.modules, "crewai", MagicMock())
+
+    fake_crew = MagicMock()
+    fake_crew.kickoff.side_effect = RuntimeError("crew failed")
+
+    adapter = CrewAIAdapter()
+    result = adapter.run(fake_crew, "run")
+
+    assert result.final_output == ""
+    assert any("crew failed" in e for e in result.errors)
+    assert result.metadata.get("exception_type") == "RuntimeError"
+
+
+def test_crewai_adapter_run_agent_calls_execute_task(monkeypatch):
+    """run_agent() creates a Task and calls agent.execute_task()."""
+    import sys
+    from unittest.mock import MagicMock
+    from agentcheck.adapters.crewai import CrewAIAdapter
+
+    fake_crewai = MagicMock()
+    fake_task_instance = MagicMock()
+    fake_crewai.Task.return_value = fake_task_instance
+    monkeypatch.setitem(sys.modules, "crewai", fake_crewai)
+
+    fake_agent = MagicMock()
+    fake_agent.execute_task.return_value = "agent output"
+
+    adapter = CrewAIAdapter()
+    result = adapter.run_agent(fake_agent, "do the task")
+
+    fake_agent.execute_task.assert_called_once_with(fake_task_instance)
+    assert result.final_output == "agent output"
+
+
+def test_crewai_adapter_run_agent_handles_exception(monkeypatch):
+    """Exceptions from execute_task() are caught and surfaced as errors."""
+    import sys
+    from unittest.mock import MagicMock
+    from agentcheck.adapters.crewai import CrewAIAdapter
+
+    fake_crewai = MagicMock()
+    fake_crewai.Task.return_value = MagicMock()
+    monkeypatch.setitem(sys.modules, "crewai", fake_crewai)
+
+    fake_agent = MagicMock()
+    fake_agent.execute_task.side_effect = ValueError("agent exploded")
+
+    adapter = CrewAIAdapter()
+    result = adapter.run_agent(fake_agent, "do the task")
+
+    assert result.final_output == ""
+    assert any("agent exploded" in e for e in result.errors)
+    assert result.metadata.get("exception_type") == "ValueError"
+
+
+def test_crewai_adapter_import_guard_raises(monkeypatch):
+    """ImportError is raised with a helpful message when crewai is not installed."""
+    import sys
+    from unittest.mock import MagicMock
+    from agentcheck.adapters.crewai import CrewAIAdapter
+
+    # sys.modules[key] = None causes 'import crewai' to raise ImportError
+    monkeypatch.setitem(sys.modules, "crewai", None)
+
+    adapter = CrewAIAdapter()
+    with pytest.raises(ImportError, match="crewai"):
+        adapter.run(MagicMock(), "test")
 
 
 # ── Run history ──────────────────────────────────────────────────────────────

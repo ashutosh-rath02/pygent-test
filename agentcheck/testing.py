@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import inspect
 from dataclasses import dataclass
 from typing import Any, Callable
@@ -38,7 +36,7 @@ def resolve_test_argument(definition: AgentTestDefinition) -> tuple[list[Any], d
         return [], {}
     if len(signature.parameters) != 1:
         raise TypeError(
-            f"Test `{definition.name}` must accept zero arguments or one agent argument for MVP support."
+            f"Test `{definition.name}` must accept zero or one argument."
         )
     if definition.agent_factory is None:
         raise TypeError(
