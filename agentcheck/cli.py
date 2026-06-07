@@ -308,7 +308,9 @@ def _config_init(output: str | None) -> int:
     print(_style("Config initialized", bold=True))
     print(_kv("File", str(output_path)))
     print("")
-    print("Edit the file to set your default runs, path, and options.")
+    print("Edit the file to set your default runs, path, adapter, and reporting options.")
+    print("Adapter types: python | openai_agents | langgraph | crewai | http")
+    print("For http adapters, add a url field (and optionally auth_env_var, timeout, etc.).")
     return EXIT_SUCCESS
 
 

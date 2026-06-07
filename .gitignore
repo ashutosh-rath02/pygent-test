@@ -28,6 +28,12 @@ htmlcov/
 # AgentCheck local artifacts
 .agentcheck/
 
+# Temp files created by the manual test runner
+_tmp_*/
+_tmp_*.html
+_tmp_*.py
+_tmp_*.json
+
 # Temporary pytest cache spillover seen on some Windows/OneDrive setups
 pytest-cache-files-*/
 

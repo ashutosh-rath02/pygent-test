@@ -6,14 +6,16 @@ The package name `agentcheck` is already taken on PyPI.
 
 This project is currently prepared to publish as:
 
-- distribution name: `agentcheck-behavior`
+- distribution name: `pygent-test`
 - import name: `agentcheck`
 - CLI command: `agentcheck`
+- GitHub repo: `https://github.com/ashutosh-rath02/pygent-test/`
+- PyPI project: `https://pypi.org/project/pygent-test/`
 
 That means users will install it with:
 
 ```bash
-pip install agentcheck-behavior
+pip install pygent-test
 ```
 
 and use it with:
@@ -73,7 +75,7 @@ python -m twine upload --repository testpypi dist/*
 Then test install:
 
 ```bash
-python -m pip install --index-url https://test.pypi.org/simple/ agentcheck-behavior
+python -m pip install --index-url https://test.pypi.org/simple/ pygent-test
 ```
 
 ## Upload To PyPI
@@ -96,6 +98,6 @@ Verify the package can be installed in a fresh environment:
 ```bash
 python -m venv .venv-publish-check
 .venv-publish-check\\Scripts\\activate
-python -m pip install agentcheck-behavior
+python -m pip install pygent-test
 python -c "import agentcheck; print(agentcheck.__all__)"
 ```
